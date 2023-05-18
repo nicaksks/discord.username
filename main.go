@@ -7,10 +7,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 )
 
 const (
-	baseURL  = "https://discord.com/api/v10/users/@me/pomelo"
+	baseURL  = "https://discord.com/api/v9/users/@me/relationships"
 	token    = "user-token"
 	userName = "username"
 )
@@ -20,6 +22,27 @@ type Response struct {
 }
 
 func main() {
+
+	if len(userName) < 2 || len(userName) > 32 {
+		fmt.Println("Usernames must be at least 2 characters and at most 32 characters long")
+		return
+	}
+
+	if !validUsername(userName) {
+		fmt.Println("Invalid username format. Permitted characters for new usernames: \nLatin characters (a-z) \nNumbers (0-9) \nUnderscore ( _ )  \nPeriod ( . )")
+		return
+	}
+
+	Request(strings.ToLower(userName))
+}
+
+func validUsername(userName string) bool {
+	regex := "^[a-zA-Z0-9_.]+$"
+	match, _ := regexp.MatchString(regex, userName)
+	return match
+}
+
+func Request(userName string) {
 	client := &http.Client{}
 
 	body, _ := json.Marshal(map[string]string{
@@ -28,7 +51,7 @@ func main() {
 
 	req, err := http.NewRequest("POST", baseURL, bytes.NewBuffer(body))
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Println(err)
 	}
 
 	req.Header = http.Header{
@@ -38,28 +61,27 @@ func main() {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Println(err)
 	}
 
 	body, err = io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Println(err)
 	}
 
 	var status Response
 	err = json.Unmarshal(body, &status)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Println(err)
 	}
-
 	fmt.Println(Message(status.Code, userName))
 }
 
 func Message(code int, userName string) string {
 	switch code {
-	case 40001:
+	case 80004:
 		return userName + " is available!"
-	case 50035:
+	case 0:
 		return userName + " is not available."
 	default:
 		return "Unknown error."

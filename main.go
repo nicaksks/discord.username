@@ -33,11 +33,11 @@ func main() {
 		return
 	}
 
-	Request(strings.ToLower(userName))
+	Request(userName)
 }
 
 func validUsername(userName string) bool {
-	regex := "^[a-zA-Z0-9_.]+$"
+	regex := "^[a-z0-9_.]+$"
 	match, _ := regexp.MatchString(regex, userName)
 	return match
 }

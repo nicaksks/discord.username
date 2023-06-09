@@ -8,17 +8,16 @@ import (
 	"log"
 	"net/http"
 	"regexp"
-	"strings"
 )
 
 const (
-	baseURL  = "https://discord.com/api/v9/users/@me/relationships"
+	baseURL  = "https://discord.com/api/v9/users/@me/pomelo-attempt"
 	token    = "user-token"
 	userName = "username"
 )
 
 type Response struct {
-	Code int `json:"code"`
+	Taken bool `json:"taken"`
 }
 
 func main() {
@@ -74,16 +73,14 @@ func Request(userName string) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(Message(status.Code, userName))
+	fmt.Println(Message(status.Taken, userName))
 }
 
-func Message(code int, userName string) string {
-	switch code {
-	case 80004:
-		return userName + " is available!"
-	case 0:
+func Message(taken bool, userName string) string {
+	switch taken {
+	case true:
 		return userName + " is not available."
 	default:
-		return "Unknown error."
+		return userName + " is available!"
 	}
 }
